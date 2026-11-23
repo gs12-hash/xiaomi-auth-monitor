@@ -11,15 +11,42 @@ def notify(msg):
     r.raise_for_status()
 
 def check():
-    alerts = ["🧪 PRUEBA OK: Tu bot de Telegram está conectado y funcionando."]
+    alerts = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto("https://www.hwkey.com", wait_until="networkidle", timeout=45000)
+
+        try:
+            page.goto("https://www.hwkey.com", wait_until="networkidle", timeout=45000)
+            page.wait_for_timeout(4000)
+            text_hw = page.inner_text("body")
+            for line in text_hw.splitlines():
+                if "Xiaomi MTK V6 Auth" in line or "New SLA MTK V6 Auth" in line:
+                    idx = text_hw.find(line)
+                    snippet = text_hw[idx:idx+120]
+                    if "ONLINE" in snippet.upper() and "OFFLINE" not in snippet.upper():
+                        alerts.append(f"🟢 HW-KEY ONLINE: {line.strip()}")
+        except Exception as e:
+            print("Error HW-Key:", e)
+
+        try:
+            page.goto("https://typhontool.com/server_status", wait_until="networkidle", timeout=45000)
+            page.wait_for_timeout(4000)
+            text_ty = page.inner_text("body")
+            if "NEW MTK V6" in text_ty:
+                idx = text_ty.find("NEW MTK V6")
+                snippet = text_ty[max(0, idx-80):idx+80]
+                if "Outage" not in snippet and ("Online" in snippet or "Operational" in snippet):
+                    alerts.append("🟢 TYPHON TOOL ONLINE: NEW MTK V6 activo")
+        except Exception as e:
+            print("Error Typhon:", e)
+
         browser.close()
 
     if alerts:
-        notify("\n".join(alerts))
+        notify("🚨 SERVIDOR XIAOMI 14T (DEGAS) DISPONIBLE:\n\n" + "\n".join(alerts))
+    else:
+        print("Siguen offline.")
 
 if __name__ == "__main__":
     check()
