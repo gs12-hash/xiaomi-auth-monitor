@@ -7,7 +7,8 @@ CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
 def notify(msg):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    requests.post(url, json={"chat_id": CHAT_ID, "text": msg}, timeout=15)
+    r = requests.post(url, json={"chat_id": CHAT_ID, "text": msg}, timeout=15)
+    r.raise_for_status()
 
 def check():
     alerts = []
@@ -15,7 +16,6 @@ def check():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
-        # 1. Revisar HW-Key (Xiaomi MTK V6 Auth)
         try:
             page.goto("https://www.hwkey.com", wait_until="networkidle", timeout=45000)
             page.wait_for_timeout(4000)
@@ -29,7 +29,6 @@ def check():
         except Exception as e:
             print("Error HW-Key:", e)
 
-        # 2. Revisar Typhon Tool (NEW MTK V6)
         try:
             page.goto("https://typhontool.com/server_status", wait_until="networkidle", timeout=45000)
             page.wait_for_timeout(4000)
@@ -44,8 +43,8 @@ def check():
 
         browser.close()
 
-    if True:
-    alerts.append("🧪 PRUEBA DE SISTEMA: El bot se conecta perfecto a tu Telegram.")
+    if alerts:
+        notify("🚨 SERVIDOR XIAOMI 14T (DEGAS) DISPONIBLE:\n\n" + "\n".join(alerts))
     else:
         print("Siguen offline.")
 
