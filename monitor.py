@@ -44,8 +44,8 @@ def check():
 
         browser.close()
 
-    if alerts:
-        notify("🚨 SERVIDOR XIAOMI 14T (DEGAS) DISPONIBLE:\n\n" + "\n".join(alerts))
+    if True:
+    alerts.append("🧪 PRUEBA DE SISTEMA: El bot se conecta perfecto a tu Telegram.")
     else:
         print("Siguen offline.")
 
